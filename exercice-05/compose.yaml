@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-ex05-compose
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecole
+      MYSQL_USER: etudiant
+      MYSQL_PASSWORD: etudiant
+    volumes:
+      - mysql-data-compose:/var/lib/mysql
+    networks:
+      - reseau-ex05-compose
+
+  adminer:
+    image: adminer
+    container_name: adminer-ex05-compose
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql
+    networks:
+      - reseau-ex05-compose
+
+volumes:
+  mysql-data-compose:
+
+networks:
+  reseau-ex05-compose:

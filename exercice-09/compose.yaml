@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: ex09-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ex09-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  logs-api:
+    build: ./logs-api
+    image: logs-api
+    container_name: ex09-logs-api
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/logsdb?createDatabaseIfNotExist=true
+    ports:
+      - "8086:8086"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  crud-api:
+    build: ./crud-api
+    image: crud-api
+    container_name: ex09-crud-api
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/dogsdb?createDatabaseIfNotExist=true
+      LOGS_API_URL: http://logs-api:8086
+    ports:
+      - "8085:8085"
+    depends_on:
+      db:
+        condition: service_healthy
+      logs-api:
+        condition: service_started
+
+volumes:
+  ex09-db-data:
